@@ -1,4 +1,4 @@
-const regionModel = require('../models/region_model');
+const themeModel = require('../models/theme_model');
 const ErrorResponse = require("../utils/responses/ErrorResponse");
 const SuccessResponse = require("../utils/responses/SuccessResponse");
 const StatusCodes = require('../utils/statusCodes/statusCodes')
@@ -6,9 +6,9 @@ const ErrorCodes = require('../utils/statusCodes/statusCodes')
 const ResponseMessages = require('../utils/ResponseMessages/ResponseMessages')
 const ErrorMessages = require('../utils/ResponseMessages/ErrorMessages')
 
-exports.createRegion = async (req, res) => {
+exports.createTheme = async (req, res) => {
     try {
-        const result = await regionModel.create(req.body);
+        const result = await themeModel.create(req.body);
 
         if (result.error) {
             return res
@@ -18,7 +18,7 @@ exports.createRegion = async (req, res) => {
 
         return res
             .status(StatusCodes.CREATED)
-            .json(new SuccessResponse(ResponseMessages.VENDOR_CREATION_SUCCESS, result.data));
+            .json(new SuccessResponse(ResponseMessages.THEME_CREATION_SUCCESS, result.data));
     } catch (err) {
         console.error(err);
         return res
@@ -27,10 +27,10 @@ exports.createRegion = async (req, res) => {
     }
 }
 
-exports.getRegion = async (req, res) => {
+exports.getTheme = async (req, res) => {
     try {
-        const regionId = req.query.regionId;
-        const result = await regionModel.get({regionId});
+        const themeId = req.query.themeId;
+        const result = await themeModel.get({themeId});
 
         if (result.error) {
             return res.status(ErrorCodes.NOT_FOUND).json({
@@ -41,7 +41,7 @@ exports.getRegion = async (req, res) => {
             });
         }
 
-        return res.status(200).json(new SuccessResponse(ResponseMessages.REGION_RETRIEVAL_SUCCESS, result.data));
+        return res.status(200).json(new SuccessResponse(ResponseMessages.THEME_RETRIEVAL_SUCCESS, result.data));
 
     } catch (err) {
         console.error(err);

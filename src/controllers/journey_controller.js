@@ -29,8 +29,8 @@ exports.createJourney = async (req, res) => {
 
 exports.getJourney = async (req, res) => {
     try {
-        const journeyId = req.query.vendorId;
-        const result = await vendorModel.get({journeyId});
+        const journeyId = req.query.journeyId;
+        const result = await journeyModel.get({journeyId});
 
         if (result.error) {
             return res.status(ErrorCodes.NOT_FOUND).json({

@@ -4,6 +4,8 @@ require('dotenv').config();
 const userRoutes = require('./routes/customer_routes');
 const vendorRoutes = require('./routes/vendor_routes');
 const packageRoutes = require('./routes/package_routes');
+const themeRoutes = require('./routes/theme_routes')
+const journeyRoutes = require('./routes/journey_routes');
 
 
 const app = express();
@@ -13,7 +15,8 @@ app.use(express.json());
 app.use('/customer', userRoutes);
 app.use('/vendor', vendorRoutes);
 app.use('/package', packageRoutes);
-app.use('/journey', packageRoutes);
+app.use('/journey', journeyRoutes);
+app.use('/theme', themeRoutes);
 
 // app.get('/', (req, res) => res.send('App is running'));
 

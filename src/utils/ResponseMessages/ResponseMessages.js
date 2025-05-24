@@ -7,6 +7,10 @@ module.exports = {
     PACKAGE_RETRIEVAL_SUCCESS: "package retrieved successfully",
     JOURNEY_CREATION_SUCCESS: "journey created successfully",
     JOURNEY_RETRIEVAL_SUCCESS: "journey retrieved successfully",
+    THEME_RETRIEVAL_SUCCESS: "theme retrieval success",
+    THEME_CREATION_SUCCESS: "theme creation success",
+    REGION_RETRIEVAL_SUCCESS: "region retrieval success",
+    REGION_CREATION_SUCCESS: "region creation success"
 
 
 }
