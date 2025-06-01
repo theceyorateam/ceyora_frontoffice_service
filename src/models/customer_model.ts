@@ -1,5 +1,5 @@
 import db from '../config/PrimaryDbConfigs';
-import {Customer, DBResult} from '../types/customer';
+import {Customer, DBResult} from '../types/Customer';
 import ErrorMessages from '../utils/ResponseMessages/ErrorMessages';
 
 export const create = async (data: Customer): Promise<DBResult<Customer>> => {
