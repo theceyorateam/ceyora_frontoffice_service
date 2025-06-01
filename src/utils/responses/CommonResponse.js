@@ -1,6 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-// utils/CommonResponse.ts
+// utils/BaseResponse.js
 class CommonResponse {
     constructor(success, errorCode, message, data = null) {
         this.success = success;
@@ -9,4 +7,5 @@ class CommonResponse {
         this.data = data;
     }
 }
-exports.default = CommonResponse;
+
+module.exports = CommonResponse;
