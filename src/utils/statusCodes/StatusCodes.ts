@@ -1,4 +1,5 @@
-module.exports = {
+// utils/statusCodes/statusCodes.ts
+const StatusCodes = {
     OK: 200,
     CREATED: 201,
     BAD_REQUEST: 400,
@@ -6,5 +7,7 @@ module.exports = {
     NOT_FOUND: 404,
     INTERNAL_ERROR: 500,
 
-    SUCCESS: 1001
-};
+    SUCCESS: 1001,
+} as const;
+
+export default StatusCodes;

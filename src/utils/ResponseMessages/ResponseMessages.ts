@@ -1,4 +1,5 @@
-module.exports = {
+// utils/ResponseMessages/ResponseMessages.ts
+const ResponseMessages = {
     CUSTOMER_CREATION_SUCCESS: "customer created successfully",
     CUSTOMER_RETRIEVAL_SUCCESS: "customer retrieved successfully",
     VENDOR_CREATION_SUCCESS: "vendor created successfully",
@@ -10,7 +11,7 @@ module.exports = {
     THEME_RETRIEVAL_SUCCESS: "theme retrieval success",
     THEME_CREATION_SUCCESS: "theme creation success",
     REGION_RETRIEVAL_SUCCESS: "region retrieval success",
-    REGION_CREATION_SUCCESS: "region creation success"
+    REGION_CREATION_SUCCESS: "region creation success",
+} as const;
 
-
-}
+export default ResponseMessages;
