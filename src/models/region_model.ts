@@ -17,7 +17,7 @@ export const create = async (data: CreateRegionData): Promise<{ data?: Region; e
     try {
         const result = await db.query(
             `INSERT INTO ceyora_db.r1_region
-       (district_id, region_name, search_times)
+       (r1_district_id, r1_region_name, search_times)
        VALUES ($1, $2, $3)
        RETURNING *`,
             [districtId, regionName, searchTimes]

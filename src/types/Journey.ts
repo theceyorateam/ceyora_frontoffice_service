@@ -1,6 +1,7 @@
 export interface Journey {
     journeyId?: number;
     vendorId: number;
+    customerId: number,
     scheduledDateTime: string; // or Date if you're using proper JS dates
     packageId: number;
     isCancelled: boolean;

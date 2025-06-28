@@ -4,6 +4,7 @@ import db from '../config/PrimaryDbConfigs';
 export const create = async (data: Journey): Promise<{ data?: Journey; error?: string }> => {
     const {
         vendorId,
+        customerId,
         scheduledDateTime,
         packageId,
         isCancelled,
@@ -18,13 +19,13 @@ export const create = async (data: Journey): Promise<{ data?: Journey; error?: s
     try {
         const result = await db.query(
             `INSERT INTO ceyora_db.j1_journey (
-         vendor_id, scheduled_date_time, package_id, is_cancelled, cancelled_date,
+         vendor_id, customer_id,  scheduled_date_time, package_id, is_cancelled, cancelled_date,
          is_refunded, refunded_date, last_updated_date, is_vendor_approved, vendor_approved_date
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING *;`,
             [
-                vendorId, scheduledDateTime, packageId, isCancelled, cancelledDate,
+                vendorId, customerId, scheduledDateTime, packageId, isCancelled, cancelledDate,
                 isRefunded, refundedDate, lastUpdatedDate, isVendorApproved, vendorApprovedDate
             ]
         );
