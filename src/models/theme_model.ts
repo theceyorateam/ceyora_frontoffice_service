@@ -65,3 +65,22 @@ export const get = async (
         return {error: 'Internal server error'};
     }
 };
+
+export const getAllThemes = async (): Promise<ServiceResponse<Theme[]>> => {
+    try {
+        const result = await db.query<Theme>(
+            `SELECT *
+             FROM ceyora_db.t1_theme`,
+        );
+
+        if (result.rows.length === 0) {
+            return {error: 'Themes not found'};
+        }
+
+        return {data: result.rows};
+
+    } catch (err: any) {
+        console.error('Error fetching theme:', err.message);
+        return {error: 'Internal server error'};
+    }
+};

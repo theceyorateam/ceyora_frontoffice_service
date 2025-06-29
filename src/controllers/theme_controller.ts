@@ -59,3 +59,29 @@ export const getTheme: RequestHandler = async (req, res) => {
             .json(new ErrorResponse(StatusCodes.INTERNAL_ERROR, ErrorMessages.SERVER_ERROR));
     }
 };
+
+export const getAllThemes: RequestHandler = async (req, res) => {
+    try {
+        const themeId = Number(req.query.themeId);
+
+        const result = await themeModel.getAllThemes();
+
+        if (result.error) {
+            res.status(StatusCodes.NOT_FOUND)
+                .json({
+                    success: false,
+                    errorCode: 1002,
+                    message: result.error,
+                    data: null
+                });
+            return;
+        }
+
+        res.status(StatusCodes.OK)
+            .json(new SuccessResponse(ResponseMessages.THEME_RETRIEVAL_SUCCESS, result.data));
+    } catch (err: any) {
+        console.error(err);
+        res.status(StatusCodes.INTERNAL_ERROR)
+            .json(new ErrorResponse(StatusCodes.INTERNAL_ERROR, ErrorMessages.SERVER_ERROR));
+    }
+};
