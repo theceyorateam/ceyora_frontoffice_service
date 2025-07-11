@@ -1,37 +1,28 @@
+// src/models/journey_model.ts
+import { PrismaClient } from '@prisma/client';
 import { Journey } from '../types/Journey';
-import db from '../config/PrimaryDbConfigs';
+
+const prisma = new PrismaClient();
 
 export const create = async (data: Journey): Promise<{ data?: Journey; error?: string }> => {
-    const {
-        vendorId,
-        customerId,
-        scheduledDateTime,
-        packageId,
-        isCancelled,
-        cancelledDate,
-        isRefunded,
-        refundedDate,
-        lastUpdatedDate,
-        isVendorApproved,
-        vendorApprovedDate
-    } = data;
-
     try {
-        const result = await db.query(
-            `INSERT INTO ceyora_db.j1_journey (
-         vendor_id, customer_id,  scheduled_date_time, package_id, is_cancelled, cancelled_date,
-         is_refunded, refunded_date, last_updated_date, is_vendor_approved, vendor_approved_date
-       )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-       RETURNING *;`,
-            [
-                vendorId, customerId, scheduledDateTime, packageId, isCancelled, cancelledDate,
-                isRefunded, refundedDate, lastUpdatedDate, isVendorApproved, vendorApprovedDate
-            ]
-        );
+        const journey = await prisma.j1_journey.create({
+            data: {
+                vendor_id: data.vendorId,
+                customer_id: data.customerId,
+                scheduled_date_time: data.scheduledDateTime,
+                package_id: data.packageId,
+                is_cancelled: data.isCancelled,
+                cancelled_date: data.cancelledDate,
+                is_refunded: data.isRefunded,
+                refunded_date: data.refundedDate,
+                last_updated_date: data.lastUpdatedDate,
+                is_vendor_approved: data.isVendorApproved,
+                vendor_approved_date: data.vendorApprovedDate,
+            },
+        });
 
-        return { data: result.rows[0] as Journey };
-
+        return { data: journey as Journey };
     } catch (err: any) {
         console.error('Error creating journey:', err.message);
         return { error: 'Internal server error' };
@@ -39,20 +30,16 @@ export const create = async (data: Journey): Promise<{ data?: Journey; error?: s
 };
 
 export const get = async (data: { journeyId: number }): Promise<{ data?: Journey; error?: string }> => {
-    const { journeyId } = data;
-
     try {
-        const result = await db.query(
-            `SELECT * FROM ceyora_db.j1_journey WHERE journey_id = $1`,
-            [journeyId]
-        );
+        const journey = await prisma.j1_journey.findUnique({
+            where: {
+                journey_id: data.journeyId,
+            },
+        });
 
-        if (result.rows.length === 0) {
-            return { error: 'Journey not found' };
-        }
+        if (!journey) return { error: 'Journey not found' };
 
-        return { data: result.rows[0] as Journey };
-
+        return { data: journey as Journey };
     } catch (err: any) {
         console.error('Error fetching journey:', err.message);
         return { error: 'Internal server error' };

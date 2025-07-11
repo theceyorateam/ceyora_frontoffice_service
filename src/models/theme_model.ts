@@ -1,10 +1,7 @@
-import db from '../config/PrimaryDbConfigs';
+// src/models/theme_model.ts
+import { PrismaClient } from '@prisma/client';
 
-interface Theme {
-    theme_id: number;
-    theme_title: string;
-    theme_description: string;
-}
+const prisma = new PrismaClient();
 
 interface CreateThemeInput {
     themeTitle: string;
@@ -22,65 +19,48 @@ interface ServiceResponse<T> {
 
 export const create = async (
     data: CreateThemeInput
-): Promise<ServiceResponse<Theme>> => {
-    const {themeTitle, themeDescription} = data;
-
+): Promise<ServiceResponse<any>> => {
     try {
-        const result = await db.query<Theme>(
-            `INSERT INTO ceyora_db.t1_theme (theme_title, theme_description)
-             VALUES ($1, $2)
-             RETURNING *`,
-            [themeTitle, themeDescription]
-        );
+        const theme = await prisma.t1_theme.create({
+            data: {
+                theme_title: data.themeTitle,
+                theme_description: data.themeDescription,
+            },
+        });
 
-        return {data: result.rows[0]};
-
+        return { data: theme };
     } catch (err: any) {
         console.error('Error creating theme:', err.message);
-        return {error: 'Internal server error'};
+        return { error: 'Internal server error' };
     }
 };
 
 export const get = async (
     data: GetThemeInput
-): Promise<ServiceResponse<Theme>> => {
-    const {themeId} = data;
-
+): Promise<ServiceResponse<any>> => {
     try {
-        const result = await db.query<Theme>(
-            `SELECT *
-             FROM ceyora_db.t1_theme
-             WHERE theme_id = $1`,
-            [themeId]
-        );
+        const theme = await prisma.t1_theme.findUnique({
+            where: {
+                theme_id: data.themeId,
+            },
+        });
 
-        if (result.rows.length === 0) {
-            return {error: 'Theme not found'};
-        }
-
-        return {data: result.rows[0]};
-
+        if (!theme) return { error: 'Theme not found' };
+        return { data: theme };
     } catch (err: any) {
         console.error('Error fetching theme:', err.message);
-        return {error: 'Internal server error'};
+        return { error: 'Internal server error' };
     }
 };
 
-export const getAllThemes = async (): Promise<ServiceResponse<Theme[]>> => {
+export const getAllThemes = async (): Promise<ServiceResponse<any[]>> => {
     try {
-        const result = await db.query<Theme>(
-            `SELECT *
-             FROM ceyora_db.t1_theme`,
-        );
+        const themes = await prisma.t1_theme.findMany();
 
-        if (result.rows.length === 0) {
-            return {error: 'Themes not found'};
-        }
-
-        return {data: result.rows};
-
+        if (themes.length === 0) return { error: 'Themes not found' };
+        return { data: themes };
     } catch (err: any) {
-        console.error('Error fetching theme:', err.message);
-        return {error: 'Internal server error'};
+        console.error('Error fetching themes:', err.message);
+        return { error: 'Internal server error' };
     }
 };

@@ -1,6 +1,8 @@
-import {Vendor} from '../types/Vendor';
+// src/models/vendor_model.ts
+import { PrismaClient } from '@prisma/client';
+import { Vendor } from '../types/Vendor';
 
-import db from '../config/PrimaryDbConfigs';
+const prisma = new PrismaClient();
 
 interface CreateResult {
     data?: Vendor;
@@ -19,52 +21,54 @@ export const create = async (data: Vendor): Promise<CreateResult> => {
         vendorContactNo1,
         vendorContactNo2,
         vendorEmail,
-        vendorRegion
+        vendorRegion,
     } = data;
 
     try {
-        const result = await db.query(
-            `INSERT INTO ceyora_db.v1_vendor
-             (t1_theme_id, location, total_rate_points, rate_count, vendor_title, vendor_description,
-              vendor_additional_data, vendor_registered_date, vendor_contact_number_1, vendor_contact_number_2,
-              vendor_email)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-             RETURNING *`,
-            [themeId, location, totalRatePoints, rateCount, vendorTitle, vendorDescription, vendorAdditionalData, new Date(), vendorContactNo1, vendorContactNo2, vendorEmail]
-        );
+        const vendor = await prisma.v1_vendor.create({
+            data: {
+                t1_theme_id: themeId,
+                location,
+                total_rate_points: totalRatePoints ?? 0,
+                rate_count: rateCount ?? 0,
+                vendor_title: vendorTitle,
+                vendor_description: vendorDescription,
+                vendor_additional_data: vendorAdditionalData,
+                vendor_registered_date: new Date(),
+                vendor_contact_number_1: vendorContactNo1,
+                vendor_contact_number_2: vendorContactNo2,
+                vendor_email: vendorEmail,
+            },
+        });
 
-        const updateVendorRegion = await db.query(
-            `INSERT INTO ceyora_db.w1_vendor_region
-                 (vendor_id, region_id)
-             VALUES ($1, $2)`,
-            [result.rows[0].vendor_id, vendorRegion]
-        )
+        await prisma.w1_vendor_region.create({
+            data: {
+                vendor_id: vendor.vendor_id,
+                region_id: vendorRegion,
+            },
+        });
 
-        return {data: result.rows[0]};
+        return { data: vendor as Vendor };
     } catch (err: any) {
         console.error('Error creating vendor:', err.message);
-        return {error: 'Internal server error'};
+        return { error: 'Internal server error' };
     }
 };
 
-export const get = async (data: { vendorId: number }): Promise<CreateResult> => {
-    const {vendorId} = data;
-
+export const get = async (
+    data: { vendorId: number }
+): Promise<CreateResult> => {
     try {
-        const result = await db.query(
-            `SELECT *
-             FROM ceyora_db.v1_vendor
-             WHERE vendor_id = $1`,
-            [vendorId]
-        );
+        const vendor = await prisma.v1_vendor.findUnique({
+            where: {
+                vendor_id: data.vendorId,
+            },
+        });
 
-        if (result.rows.length === 0) {
-            return {error: 'Vendor not found'};
-        }
-
-        return {data: result.rows[0]};
+        if (!vendor) return { error: 'Vendor not found' };
+        return { data: vendor as Vendor };
     } catch (err: any) {
         console.error('Error fetching vendor:', err.message);
-        return {error: 'Internal server error'};
+        return { error: 'Internal server error' };
     }
 };

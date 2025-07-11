@@ -13,7 +13,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
 
         if (result.error) {
             res.status(StatusCodes.BAD_REQUEST).json(
-                new ErrorResponse(StatusCodes.BAD_REQUEST, ErrorMessages.BAD_REQUEST)
+                new ErrorResponse(StatusCodes.BAD_REQUEST, result.error)
             );
             return;
         }
@@ -22,28 +22,8 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
             new SuccessResponse(ResponseMessages.CUSTOMER_CREATION_SUCCESS, result.data)
         );
     } catch (err: any) {
-        // PostgreSQL unique violation code
-        if (err.code === '23505') {
-            // Check which field caused the issue
-            const detail: string = err.detail || '';
-
-            let message = 'Duplicate entry';
-
-            if (detail.includes('username')) {
-                message = 'Username already exists. Please choose a different one.';
-            } else if (detail.includes('email')) {
-                message = 'Email already registered. Try logging in or use another.';
-            } else if (detail.includes('phone')) {
-                message = 'Phone number already exists in our system.';
-            }
-
-            res.status(StatusCodes.BAD_REQUEST).json(
-                new ErrorResponse(StatusCodes.BAD_REQUEST, message)
-            );
-            return;
-        }
-
         console.error('Unhandled error in createUser:', err);
+
         res.status(ErrorCodes.SERVER_ERROR).json(
             new ErrorResponse(ErrorCodes.SERVER_ERROR, ErrorMessages.SERVER_ERROR)
         );
@@ -53,23 +33,28 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
 export const getUser = async (req: Request, res: Response): Promise<void> => {
     try {
         const customerId = parseInt(req.query.customerId as string, 10);
+
+        if (isNaN(customerId)) {
+            res.status(StatusCodes.BAD_REQUEST).json(
+                new ErrorResponse(StatusCodes.BAD_REQUEST, 'Invalid customerId')
+            );
+            return;
+        }
+
         const result = await userModel.get({ customerId });
 
         if (result.error) {
-            res.status(StatusCodes.NOT_FOUND).json({
-                success: false,
-                errorCode: StatusCodes.NOT_FOUND,
-                message: result.error,
-                data: null
-            });
+            res.status(StatusCodes.NOT_FOUND).json(
+                new ErrorResponse(StatusCodes.NOT_FOUND, result.error)
+            );
             return;
         }
 
         res.status(StatusCodes.OK).json(
             new SuccessResponse(ResponseMessages.CUSTOMER_RETRIEVAL_SUCCESS, result.data)
         );
-    } catch (err) {
-        console.error(err);
+    } catch (err: any) {
+        console.error('Unhandled error in getUser:', err);
         res.status(StatusCodes.INTERNAL_ERROR).json(
             new ErrorResponse(StatusCodes.INTERNAL_ERROR, ErrorMessages.SERVER_ERROR)
         );
