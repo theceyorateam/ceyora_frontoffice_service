@@ -1,4 +1,7 @@
-import db from '../config/PrimaryDbConfigs';
+// src/models/package_model.ts
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 interface PackageData {
     vendorId: number;
@@ -15,49 +18,37 @@ interface Result<T> {
     error?: string;
 }
 
-interface PackageRecord {
-    package_id: number;
-    vendor_id: number;
-    package_description: string;
-    price: number;
-    // add other columns if exist
-}
-
-export const create = async (data: PackageData): Promise<Result<PackageRecord>> => {
-    const { vendorId, packageDescription, price } = data;
-
+export const create = async (
+    data: PackageData
+): Promise<Result<any>> => {
     try {
-        const result = await db.query<PackageRecord>(
-            `INSERT INTO ceyora_db.p1_package
-       (vendor_id, package_description, price)
-       VALUES ($1, $2, $3)
-       RETURNING *`,
-                [vendorId, packageDescription, price]
-        );
+        const pkg = await prisma.p1_package.create({
+            data: {
+                vendor_id: data.vendorId,
+                package_description: data.packageDescription,
+                price: data.price,
+            },
+        });
 
-        return { data: result.rows[0] };
+        return { data: pkg };
     } catch (err: any) {
         console.error('Error creating package:', err.message);
         return { error: 'Internal server error' };
     }
 };
 
-export const get = async (data: PackageGetData): Promise<Result<PackageRecord>> => {
-    const { packageId } = data;
-
+export const get = async (
+    data: PackageGetData
+): Promise<Result<any>> => {
     try {
-        const result = await db.query<PackageRecord>(
-            `SELECT *
-       FROM ceyora_db.p1_package
-       WHERE package_id = $1`,
-                [packageId]
-        );
+        const pkg = await prisma.p1_package.findUnique({
+            where: {
+                package_id: data.packageId,
+            },
+        });
 
-        if (result.rows.length === 0) {
-            return { error: 'Package not found' };
-        }
-
-        return { data: result.rows[0] };
+        if (!pkg) return { error: 'Package not found' };
+        return { data: pkg };
     } catch (err: any) {
         console.error('Error fetching package:', err.message);
         return { error: 'Internal server error' };

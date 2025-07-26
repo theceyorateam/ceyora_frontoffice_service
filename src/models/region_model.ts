@@ -1,5 +1,8 @@
-import db from '../config/PrimaryDbConfigs';
+// src/models/region_model.ts
+import { PrismaClient } from '@prisma/client';
 import { Region } from '../types/Region';
+
+const prisma = new PrismaClient();
 
 interface CreateRegionData {
     districtId: number;
@@ -8,44 +11,41 @@ interface CreateRegionData {
 }
 
 interface GetRegionData {
-    regionId: number;  // Fix: You had vendorId by mistake; should be regionId for the query
+    regionId: number;
 }
 
-export const create = async (data: CreateRegionData): Promise<{ data?: Region; error?: string }> => {
-    const { districtId, regionName, searchTimes } = data;
-
+export const create = async (
+    data: CreateRegionData
+): Promise<{ data?: Region; error?: string }> => {
     try {
-        const result = await db.query(
-            `INSERT INTO ceyora_db.r1_region
-       (r1_district_id, r1_region_name, search_times)
-       VALUES ($1, $2, $3)
-       RETURNING *`,
-            [districtId, regionName, searchTimes]
-        );
+        const region = await prisma.r1_region.create({
+            data: {
+                r1_district_id: data.districtId,
+                r1_region_name: data.regionName,
+                search_times: data.searchTimes,
+            },
+        });
 
-        return { data: result.rows[0] };
+        return { data: region as Region };
     } catch (err: any) {
         console.error('Error creating region:', err.message);
         return { error: 'Internal server error' };
     }
 };
 
-export const get = async (data: GetRegionData): Promise<{ data?: Region; error?: string }> => {
-    const { regionId } = data;
-
+export const get = async (
+    data: GetRegionData
+): Promise<{ data?: Region; error?: string }> => {
     try {
-        const result = await db.query(
-            `SELECT *
-       FROM ceyora_db.r1_region
-       WHERE region_id = $1`,
-            [regionId]
-        );
+        const region = await prisma.r1_region.findUnique({
+            where: {
+                r1_region_id: data.regionId,
+            },
+        });
 
-        if (result.rows.length === 0) {
-            return { error: 'Region not found' };
-        }
+        if (!region) return { error: 'Region not found' };
 
-        return { data: result.rows[0] };
+        return { data: region as Region };
     } catch (err: any) {
         console.error('Error fetching region:', err.message);
         return { error: 'Internal server error' };

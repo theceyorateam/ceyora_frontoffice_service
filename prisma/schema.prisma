@@ -1,0 +1,136 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["ceyora_db", "public"]
+}
+
+model c1_customer {
+  customer_id   Int          @id @default(autoincrement())
+  first_name    String       @db.VarChar(255)
+  last_name     String       @db.VarChar(255)
+  country       String       @db.VarChar(255)
+  email         String?      @unique @db.VarChar(255)
+  phone_number  String?      @db.VarChar(20)
+  created_at    DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at    DateTime?    @default(now()) @db.Timestamp(6)
+  username      String       @unique @db.VarChar(32)
+  c1_password   String       @db.VarChar(255)
+  language_pref String?      @db.VarChar(5)
+  j1_journey    j1_journey[]
+
+  @@schema("ceyora_db")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model j1_journey {
+  journey_id           Int         @id @default(autoincrement())
+  customer_id          Int
+  vendor_id            Int?
+  scheduled_date_time  DateTime?   @db.Timestamp(6)
+  package_id           Int?
+  is_cancelled         Int?
+  cancelled_date       DateTime?   @db.Timestamp(6)
+  is_refunded          Int?
+  refunded_date        DateTime?   @db.Timestamp(6)
+  last_updated_date    DateTime?   @db.Timestamp(6)
+  is_vendor_approved   Int?
+  vendor_approved_date DateTime?   @db.Timestamp(6)
+  c1_customer          c1_customer @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_journey_customer")
+  p1_package           p1_package? @relation(fields: [package_id], references: [package_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_journey_package")
+  v1_vendor            v1_vendor?  @relation(fields: [vendor_id], references: [vendor_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_journey_vendor")
+
+  @@schema("ceyora_db")
+}
+
+model ceyora_db_l1_province {
+  province_id   Int           @id @default(autoincrement())
+  province_name String?       @db.VarChar(255)
+  l2_district   l2_district[]
+
+  @@map("l1_province")
+  @@schema("ceyora_db")
+}
+
+model l2_district {
+  district_id    Int                    @id @default(autoincrement())
+  district_name  String?                @db.VarChar(255)
+  l2_province_id Int?
+  l1_province    ceyora_db_l1_province? @relation(fields: [l2_province_id], references: [province_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_district_province")
+  r1_region      r1_region[]
+
+  @@schema("ceyora_db")
+}
+
+model p1_package {
+  package_id          Int          @id @default(autoincrement())
+  vendor_id           Int
+  package_description String
+  price               Decimal      @db.Decimal
+  j1_journey          j1_journey[]
+  v1_vendor           v1_vendor    @relation(fields: [vendor_id], references: [vendor_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_package_vendor")
+
+  @@schema("ceyora_db")
+}
+
+model r1_region {
+  r1_region_id   Int          @id @default(autoincrement())
+  r1_region_name String?      @db.VarChar(255)
+  search_times   Int?
+  r1_district_id Int?
+  l2_district    l2_district? @relation(fields: [r1_district_id], references: [district_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_region_district")
+
+  @@schema("ceyora_db")
+}
+
+model t1_theme {
+  theme_id          Int         @id @default(autoincrement())
+  theme_title       String      @db.VarChar(255)
+  theme_description String?
+  v1_vendor         v1_vendor[]
+
+  @@schema("ceyora_db")
+}
+
+model v1_vendor {
+  vendor_id               Int                @id @default(autoincrement())
+  t1_theme_id             Int
+  location                String             @db.VarChar(255)
+  total_rate_points       Int?               @default(0)
+  rate_count              Int?               @default(0)
+  vendor_title            String             @db.VarChar(255)
+  vendor_description      String
+  vendor_additional_data  String?
+  vendor_registered_date  DateTime?          @db.Timestamp(6)
+  vendor_contact_number_1 String             @db.VarChar
+  vendor_contact_number_2 String?            @db.VarChar
+  vendor_email            String?            @db.VarChar
+  j1_journey              j1_journey[]
+  p1_package              p1_package[]
+  t1_theme                t1_theme           @relation(fields: [t1_theme_id], references: [theme_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_theme_vendor")
+  w1_vendor_region        w1_vendor_region[]
+
+  @@schema("ceyora_db")
+}
+
+model w1_vendor_region {
+  vendor_id Int
+  region_id Int
+  v1_vendor v1_vendor @relation(fields: [vendor_id], references: [vendor_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_vendor_region_vendor_id")
+
+  @@id([vendor_id, region_id])
+  @@schema("ceyora_db")
+}
+
+model public_l1_province {
+  province_id   Int     @id @default(autoincrement())
+  province_name String? @db.VarChar(255)
+
+  @@map("l1_province")
+  @@schema("public")
+}

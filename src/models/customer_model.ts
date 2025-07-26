@@ -1,34 +1,56 @@
-import db from '../config/PrimaryDbConfigs';
-import {Customer, DBResult} from '../types/Customer';
+import { PrismaClient } from '@prisma/client';
+import { DBResult } from '../types/Customer';
 import ErrorMessages from '../utils/ResponseMessages/ErrorMessages';
 
-export const create = async (data: Customer): Promise<DBResult<Customer>> => {
-    const {firstName, lastName, country, email, phoneNumber, password, username} = data;
+const prisma = new PrismaClient();
 
-    // const existing = await db.query('SELECT 1 FROM ceyora_db.c1_customer WHERE username = $1', [username]);
-    // if (existing.rows.length > 0) {
-    //     return { error: ErrorMessages.DUPLICATE_USERNAME };
-    // }
-
-    const result = await db.query(
-        `INSERT INTO ceyora_db.c1_customer
-         (first_name, last_name, country, email, phone_number, created_at, username, c1_password)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-         RETURNING *`,
-        [firstName, lastName, country, email, phoneNumber, new Date(), username, password]
-    );
-
-    return {data: result.rows[0]};
-}
-;
-
-export const get = async ({customerId}: { customerId: number }): Promise<DBResult<Customer>> => {
+export const create = async (data: {
+    firstName: string;
+    lastName: string;
+    country: string;
+    email?: string;
+    phoneNumber?: string;
+    password: string;
+    username: string;
+}): Promise<DBResult<any>> => {
     try {
-        const result = await db.query('SELECT * FROM ceyora_db.c1_customer WHERE customer_id = $1', [customerId]);
-        if (result.rows.length === 0) return {error: 'Customer not found'};
-        return {data: result.rows[0]};
+        const customer = await prisma.c1_customer.create({
+            data: {
+                first_name: data.firstName,
+                last_name: data.lastName,
+                country: data.country,
+                email: data.email,
+                phone_number: data.phoneNumber,
+                username: data.username,
+                c1_password: data.password,
+                created_at: new Date(),
+            },
+        });
+
+        return { data: customer };
+    } catch (err: any) {
+        // Handle unique constraint errors (Postgres error code 23505)
+        if (err.code === 'P2002' && err.meta?.target?.includes('username')) {
+            return { error: ErrorMessages.DUPLICATE_USERNAME };
+        }
+        return { error: 'Failed to create customer' };
+    }
+};
+
+export const get = async ({
+                              customerId,
+                          }: {
+    customerId: number;
+}): Promise<DBResult<any>> => {
+    try {
+        const customer = await prisma.c1_customer.findUnique({
+            where: { customer_id: customerId },
+        });
+
+        if (!customer) return { error: 'Customer not found' };
+        return { data: customer };
     } catch (err: any) {
         console.error('Error fetching customer:', err.message);
-        return {error: 'Internal server error'};
+        return { error: 'Internal server error' };
     }
 };
