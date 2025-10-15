@@ -1,9 +1,9 @@
 import express, { Router } from 'express';
-import { createJourney, getJourney } from '../controllers/journey_controller';
+import { createJourney, getJourney, getAllJourneys } from '../controllers/journey_controller';
 
 const router: Router = express.Router();
 
 router.post('', createJourney);
-router.get('', getJourney);
+router.get('/:journeyId', getJourney);
 
 export default router;

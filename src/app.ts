@@ -7,11 +7,13 @@ import packageRoutes from './routes/package_routes';
 import themeRoutes from './routes/theme_routes';
 import journeyRoutes from './routes/journey_routes';
 import regionRoutes from './routes/region_routes'
+import cors from 'cors'
 
 dotenv.config();
 
 const app: Application = express();
 app.use(express.json());
+app.use(cors({ origin: 'http://localhost:3000' })); // frontend URL
 
 app.use('/customer', userRoutes);
 app.use('/vendor', vendorRoutes);

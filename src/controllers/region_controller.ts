@@ -1,4 +1,5 @@
 import { RequestHandler } from 'express';
+import { PrismaClient } from '@prisma/client';
 import * as regionModel from '../models/region_model';
 import ErrorResponse from '../utils/responses/ErrorResponse';
 import SuccessResponse from '../utils/responses/SuccessResponse';
@@ -6,6 +7,8 @@ import StatusCodes from '../utils/statusCodes/StatusCodes';
 import ErrorCodes from '../utils/statusCodes/ErrorCodes';
 import ResponseMessages from '../utils/ResponseMessages/ResponseMessages';
 import ErrorMessages from '../utils/ResponseMessages/ErrorMessages';
+
+const prisma = new PrismaClient();
 
 export const createRegion: RequestHandler = async (req, res) => {
     try {
@@ -62,6 +65,31 @@ export const getRegion: RequestHandler = async (req, res) => {
         );
     } catch (err: any) {
         console.error('Unhandled error in getRegion:', err);
+        res.status(StatusCodes.INTERNAL_ERROR).json(
+            new ErrorResponse(StatusCodes.INTERNAL_ERROR, ErrorMessages.SERVER_ERROR)
+        );
+    }
+};
+
+export const getAllRegions: RequestHandler = async (req, res) => {
+    try {
+        const regions = await prisma.r1_region.findMany({
+            select: {
+                r1_region_id: true,
+                r1_region_name: true,
+                search_times: true,
+                r1_district_id: true,
+            },
+            orderBy: {
+                r1_region_name: 'asc',
+            },
+        });
+
+        res.status(StatusCodes.OK).json(
+            new SuccessResponse(ResponseMessages.REGION_RETRIEVAL_SUCCESS, regions)
+        );
+    } catch (err: any) {
+        console.error('Unhandled error in getAllRegions:', err);
         res.status(StatusCodes.INTERNAL_ERROR).json(
             new ErrorResponse(StatusCodes.INTERNAL_ERROR, ErrorMessages.SERVER_ERROR)
         );

@@ -4,7 +4,11 @@ import { Journey } from '../types/Journey';
 
 const prisma = new PrismaClient();
 
+/**
+ * Create a new journey
+ */
 export const create = async (data: Journey): Promise<{ data?: Journey; error?: string }> => {
+    console.log('Creating journey with data:', data);
     try {
         const journey = await prisma.j1_journey.create({
             data: {
@@ -22,6 +26,7 @@ export const create = async (data: Journey): Promise<{ data?: Journey; error?: s
             },
         });
 
+        console.log('Journey created successfully:', journey);
         return { data: journey as Journey };
     } catch (err: any) {
         console.error('Error creating journey:', err.message);
@@ -29,7 +34,11 @@ export const create = async (data: Journey): Promise<{ data?: Journey; error?: s
     }
 };
 
+/**
+ * Get a journey by ID
+ */
 export const get = async (data: { journeyId: number }): Promise<{ data?: Journey; error?: string }> => {
+    console.log('Fetching journey with ID:', data.journeyId);
     try {
         const journey = await prisma.j1_journey.findUnique({
             where: {
@@ -37,11 +46,36 @@ export const get = async (data: { journeyId: number }): Promise<{ data?: Journey
             },
         });
 
-        if (!journey) return { error: 'Journey not found' };
+        if (!journey) {
+            console.warn('Journey not found with ID:', data.journeyId);
+            return { error: 'Journey not found' };
+        }
 
+        console.log('Journey retrieved successfully:', journey);
         return { data: journey as Journey };
     } catch (err: any) {
         console.error('Error fetching journey:', err.message);
+        return { error: 'Internal server error' };
+    }
+};
+
+/**
+ * Get all journeys
+ */
+export const getAll = async (): Promise<{ data?: Journey[]; error?: string }> => {
+    console.log('Fetching all journeys');
+    try {
+        const journeys = await prisma.j1_journey.findMany();
+
+        if (!journeys || journeys.length === 0) {
+            console.warn('No journeys found in the database');
+            return { error: 'No journeys found' };
+        }
+
+        console.log(`Successfully retrieved ${journeys.length} journeys`);
+        return { data: journeys as unknown as Journey[] };
+    } catch (err: any) {
+        console.error('Error fetching all journeys:', err.message);
         return { error: 'Internal server error' };
     }
 };
